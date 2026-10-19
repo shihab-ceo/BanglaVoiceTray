@@ -14,7 +14,7 @@
 3. `run_from_source.bat` চালান। প্রথমবার Python packages ইনস্টল হবে।
 4. সিস্টেম ট্রে-তে মাইক্রোফোন আইকন দেখুন। আইকনে left-click করলে শোনা চালু/বন্ধ হবে; চালু হলে আইকন লাল, বন্ধ হলে নীল দেখাবে।
 5. Notepad খুলে কার্সর রাখুন, তারপর ডিফল্ট `Ctrl+Shift+B` চাপুন। বন্ধ করতে একই shortcut আবার চাপুন।
-6. আইকনে right-click করে **সেটিংস** খুলুন। Shortcut field-এ ক্লিক করে পছন্দের key বা combination চাপুন, ভাষা ও microphone বাছুন, paste delay এবং Windows startup সেট করে সংরক্ষণ করুন।
+6. আইকনে right-click করে **সেটিংস** খুলুন। Shortcut field-এ ক্লিক করে একটি key (যেমন F8) অথবা একসঙ্গে দুটি key (যেমন Ctrl+B বা Ctrl+Shift) চাপুন, ভাষা ও microphone বাছুন, paste delay এবং Windows startup সেট করে সংরক্ষণ করুন।
 7. right-click menu-তে **অবস্থা ও শর্টকাট দেখুন** চাপলে বর্তমান mic status ও shortcut Settings panel-এ দেখা যাবে।
 
 ## EXE তৈরি
@@ -39,3 +39,4 @@
 
 ## নিরাপত্তা
 সোর্স কোড দেখে নিন। প্রথমবার চালানোর সময় Windows Defender/SmartScreen সতর্কতা দেখালে যাচাই না করে bypass করবেন না।
+

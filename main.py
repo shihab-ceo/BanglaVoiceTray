@@ -231,16 +231,24 @@ class BanglaVoiceTray:
         try:
             root = tk.Tk()
             root.title("Bangla Voice Type · Dashboard")
-            root.geometry("940x650")
-            root.minsize(820, 600)
-            root.configure(bg="#07172d")
-            root.resizable(False, False)
+            screen_width = root.winfo_screenwidth()
+            screen_height = root.winfo_screenheight()
+            window_width = min(1040, max(820, int(screen_width * 0.88)))
+            window_height = min(780, max(620, int(screen_height * 0.84)))
+            root.geometry(f"{window_width}x{window_height}")
+            root.minsize(800, 600)
+            root.configure(bg="#08111f")
+            root.resizable(True, True)
+            try:
+                root.attributes("-alpha", 0.985)
+            except tk.TclError:
+                pass
 
             colors = {
-                "bg": "#07172d", "panel": "#0d203a", "panel2": "#112945",
-                "line": "#1b4266", "text": "#eff7ff", "muted": "#9ab4cf",
-                "blue": "#1687f5", "cyan": "#27c4ff", "red": "#f04455",
-                "green": "#37d59a", "yellow": "#ffbd4a"
+                "bg": "#08111f", "panel": "#101c2d", "panel2": "#1a2a40",
+                "line": "#355072", "text": "#f8fbff", "muted": "#c2d0e0",
+                "blue": "#1677e8", "cyan": "#59d6ff", "red": "#ff5668",
+                "green": "#45dba2", "yellow": "#ffd166"
             }
             style = ttk.Style(root)
             style.theme_use("clam")
@@ -411,16 +419,24 @@ class BanglaVoiceTray:
         try:
             root = tk.Tk()
             root.title("Bangla Voice Tray · Control Center")
-            root.geometry("600x650")
-            root.minsize(560, 620)
-            root.configure(bg="#0b1220")
-            root.resizable(False, False)
+            screen_width = root.winfo_screenwidth()
+            screen_height = root.winfo_screenheight()
+            window_width = min(840, max(680, int(screen_width * 0.72)))
+            window_height = min(860, max(680, int(screen_height * 0.90)))
+            root.geometry(f"{window_width}x{window_height}")
+            root.minsize(640, 640)
+            root.configure(bg="#08111f")
+            root.resizable(True, True)
+            try:
+                root.attributes("-alpha", 0.985)
+            except tk.TclError:
+                pass
 
             colors = {
-                "bg": "#0b1220", "panel": "#121e32", "panel2": "#17263d",
-                "line": "#263852", "text": "#edf5ff", "muted": "#94a9c3",
-                "cyan": "#38bdf8", "blue": "#1687e8", "red": "#ef4444",
-                "green": "#34d399", "button": "#0879d1"
+                "bg": "#08111f", "panel": "#101c2d", "panel2": "#1a2a40",
+                "line": "#355072", "text": "#f8fbff", "muted": "#c2d0e0",
+                "cyan": "#59d6ff", "blue": "#1677e8", "red": "#ff5668",
+                "green": "#45dba2", "button": "#1677e8"
             }
             style = ttk.Style(root)
             style.theme_use("clam")
@@ -469,26 +485,47 @@ class BanglaVoiceTray:
                                     readonlybackground=colors["panel2"], relief="flat", justify="center")
             hotkey_entry.pack(fill="x", padx=16, pady=(9, 5), ipady=9)
             hotkey_entry.configure(state="readonly")
-            hint = label(card, "বক্সে ক্লিক করে key বা combination চাপুন · যেমন Ctrl + Shift + B", 9, colors["muted"])
+            hint = label(card, "বক্সে ক্লিক করে একটি key বা একসঙ্গে দুটি key চাপুন · যেমন F8, Ctrl + B, Ctrl + Shift", 9, colors["muted"])
             hint.pack(anchor="w", padx=16, pady=(0, 13))
 
-            modifier_names = ((0x4, "ctrl"), (0x1, "shift"), (0x20008, "alt"))
+            modifier_names = ((0x4, "ctrl"), (0x1, "shift"), (0x20000, "alt"))
+            modifier_keys = {"shift_l": "shift", "shift_r": "shift", "control_l": "ctrl",
+                             "control_r": "ctrl", "alt_l": "alt", "alt_r": "alt"}
             key_aliases = {"return": "enter", "escape": "esc", "prior": "page up", "next": "page down",
                            "backspace": "backspace", "caps_lock": "caps lock", "print": "print screen"}
+            capture_pressed = []
 
             def capture_hotkey(event):
-                key = event.keysym.lower()
-                if key in ("shift_l", "shift_r", "control_l", "control_r", "alt_l", "alt_r"):
-                    return "break"
-                modifiers = [name for mask, name in modifier_names if event.state & mask]
-                key = key_aliases.get(key, key)
-                hotkey_var.set("+".join(modifiers + [key]))
+                raw_key = event.keysym.lower()
+                key = modifier_keys.get(raw_key, key_aliases.get(raw_key, raw_key))
+                if key not in capture_pressed:
+                    capture_pressed.append(key)
+                # Modifiers are listed first; other simultaneously held keys keep press order.
+                active_modifiers = [name for mask, name in modifier_names if event.state & mask]
+                if key in ("ctrl", "shift", "alt") and key not in active_modifiers:
+                    active_modifiers.append(key)
+                ordered = []
+                for name in ("ctrl", "alt", "shift"):
+                    if name in active_modifiers:
+                        ordered.append(name)
+                for name in capture_pressed:
+                    if name not in ordered:
+                        ordered.append(name)
+                hotkey_var.set("+".join(ordered))
+                return "break"
+
+            def release_capture_key(event):
+                raw_key = event.keysym.lower()
+                key = modifier_keys.get(raw_key, key_aliases.get(raw_key, raw_key))
+                if key in capture_pressed:
+                    capture_pressed.remove(key)
                 return "break"
 
             hotkey_entry.bind("<KeyPress>", capture_hotkey)
+            hotkey_entry.bind("<KeyRelease>", release_capture_key)
             hotkey_entry.bind("<<Paste>>", lambda _event: "break")
-            hotkey_entry.bind("<FocusIn>", lambda _event: hint.configure(text="এখন পছন্দের key চাপুন…", fg=colors["cyan"]))
-            hotkey_entry.bind("<FocusOut>", lambda _event: hint.configure(text="বক্সে ক্লিক করে key বা combination চাপুন · যেমন Ctrl + Shift + B", fg=colors["muted"]))
+            hotkey_entry.bind("<FocusIn>", lambda _event: hint.configure(text="এখন একটি key বা একসঙ্গে দুটি key চাপুন…", fg=colors["cyan"]))
+            hotkey_entry.bind("<FocusOut>", lambda _event: hint.configure(text="বক্সে ক্লিক করে একটি key বা একসঙ্গে দুটি key চাপুন · যেমন F8, Ctrl + B, Ctrl + Shift", fg=colors["muted"]))
 
             options = tk.Frame(root, bg=colors["panel"], highlightbackground=colors["line"], highlightthickness=1)
             options.pack(fill="x", padx=24, pady=6)
@@ -524,15 +561,32 @@ class BanglaVoiceTray:
                                     style="Dark.TSpinbox", width=12)
             delay_box.grid(row=3, column=1, sticky="e", padx=16, pady=5)
             startup_var = tk.BooleanVar(value=self.config.get("start_with_windows", True))
-            startup_check = ttk.Checkbutton(options, text="Windows চালু হলে অ্যাপ চালু হবে",
-                                            variable=startup_var, style="Dark.TCheckbutton")
-            startup_check.grid(row=4, column=0, columnspan=2, sticky="w", padx=12, pady=(7, 13))
+            startup_button = tk.Button(options, command=lambda: toggle_startup(), relief="flat",
+                                       font=("Segoe UI", 10, "bold"), anchor="w", padx=14, pady=11,
+                                       cursor="hand2", bd=0)
+            startup_button.grid(row=4, column=0, columnspan=2, sticky="ew", padx=12, pady=(7, 13))
+
+            def refresh_startup_button():
+                enabled = bool(startup_var.get())
+                startup_button.configure(
+                    text=("✓  Windows চালু হলে অ্যাপ চালু হবে  ·  চালু" if enabled
+                          else "○  Windows চালু হলে অ্যাপ চালু হবে  ·  বন্ধ"),
+                    bg=("#073d35" if enabled else "#273246"),
+                    fg=("#62e6b7" if enabled else colors["muted"]),
+                    activebackground=("#0b5145" if enabled else "#35445a"),
+                    activeforeground=colors["text"])
+
+            def toggle_startup():
+                startup_var.set(not startup_var.get())
+                refresh_startup_button()
+
+            refresh_startup_button()
             options.grid_columnconfigure(0, weight=1)
 
             label(root, "Speech Recognition অনলাইনে Google-এর মাধ্যমে কাজ করে।", 9, colors["muted"], bg=colors["bg"]).pack(anchor="w", padx=26, pady=(8, 4))
             footer = tk.Frame(root, bg=colors["bg"])
             footer.pack(fill="x", padx=24, pady=(9, 16))
-            save_button = tk.Button(footer, text="সেটিংস সংরক্ষণ", command=lambda: save(), bg=colors["button"],
+            save_button = tk.Button(footer, text="শর্টকাট ও সেটিংস সংরক্ষণ", command=lambda: save(), bg=colors["button"],
                                     activebackground="#1495eb", activeforeground="white", fg="white",
                                     font=("Segoe UI", 10, "bold"), relief="flat", padx=18, pady=10, cursor="hand2")
             save_button.pack(side="right")
@@ -675,3 +729,7 @@ if __name__ == "__main__":
     except Exception:
         log(traceback.format_exc())
         raise
+
+
+
+
