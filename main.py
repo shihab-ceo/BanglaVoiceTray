@@ -185,7 +185,7 @@ class BanglaVoiceTray:
         except Exception as e:
             self.last_status = "মাইক্রোফোন চালু হয়নি · Settings ও log দেখুন"
             log("Microphone/record error: " + traceback.format_exc())
-            self.notify(APP_NAME, "মাইক্রোফোন চালু হয়নি। Settings ও app.log দেখুন।")
+            self.notify(APP_NAME, "মাইক্রোফোন চালু হয়নি। Windows microphone permission চালু করুন বা Settings-এ input device বদলান।")
             self.active = False
         finally:
             self.busy = False
@@ -537,7 +537,7 @@ class BanglaVoiceTray:
             language_box = ttk.Combobox(options, textvariable=language_var, values=list(language_codes),
                                         state="readonly", style="Dark.TCombobox", width=24)
             language_box.grid(row=1, column=1, sticky="e", padx=16, pady=5)
-            label(options, "মাইক্রোফোন", 10, colors["muted"]).grid(row=2, column=0, sticky="w", padx=16, pady=5)
+            label(options, "এই অ্যাপের input microphone · একটি বেছে নিন", 10, colors["muted"]).grid(row=2, column=0, sticky="w", padx=16, pady=5)
             device_names = ["System default"]
             device_indexes = {"System default": None}
             try:
@@ -555,16 +555,34 @@ class BanglaVoiceTray:
             device_box = ttk.Combobox(options, textvariable=device_var, values=device_names,
                                       state="readonly", style="Dark.TCombobox", width=24)
             device_box.grid(row=2, column=1, sticky="e", padx=16, pady=5)
-            label(options, "পেস্ট delay (সেকেন্ড)", 10, colors["muted"]).grid(row=3, column=0, sticky="w", padx=16, pady=5)
+
+            def open_mic_privacy_settings():
+                try:
+                    os.startfile("ms-settings:privacy-microphone")
+                except Exception as e:
+                    log("Could not open Windows microphone privacy settings: " + repr(e))
+                    messagebox.showerror("Microphone permission",
+                                         "Windows Settings → Privacy & security → Microphone খুলে desktop apps-এর access চালু করুন.",
+                                         parent=root)
+
+            label(options, "অনুমতি বন্ধ থাকলে Windows-এ চালু করুন", 9, colors["muted"]).grid(row=3, column=0, sticky="w", padx=16, pady=5)
+            permission_button = tk.Button(options, text="মাইক্রোফোন permission খুলুন",
+                                          command=open_mic_privacy_settings, bg=colors["panel2"],
+                                          activebackground=colors["line"], activeforeground=colors["text"],
+                                          fg=colors["cyan"], font=("Segoe UI", 9, "bold"), relief="flat",
+                                          padx=12, pady=7, cursor="hand2")
+            permission_button.grid(row=3, column=1, sticky="e", padx=16, pady=5)
+
+            label(options, "পেস্ট delay (সেকেন্ড)", 10, colors["muted"]).grid(row=4, column=0, sticky="w", padx=16, pady=5)
             delay_var = tk.StringVar(value=str(self.config.get("paste_delay", 0.15)))
             delay_box = ttk.Spinbox(options, textvariable=delay_var, from_=0.0, to=2.0, increment=0.05,
                                     style="Dark.TSpinbox", width=12)
-            delay_box.grid(row=3, column=1, sticky="e", padx=16, pady=5)
+            delay_box.grid(row=4, column=1, sticky="e", padx=16, pady=5)
             startup_var = tk.BooleanVar(value=self.config.get("start_with_windows", True))
             startup_button = tk.Button(options, command=lambda: toggle_startup(), relief="flat",
                                        font=("Segoe UI", 10, "bold"), anchor="w", padx=14, pady=11,
                                        cursor="hand2", bd=0)
-            startup_button.grid(row=4, column=0, columnspan=2, sticky="ew", padx=12, pady=(7, 13))
+            startup_button.grid(row=5, column=0, columnspan=2, sticky="ew", padx=12, pady=(7, 13))
 
             def refresh_startup_button():
                 enabled = bool(startup_var.get())
@@ -729,6 +747,7 @@ if __name__ == "__main__":
     except Exception:
         log(traceback.format_exc())
         raise
+
 
 
 
