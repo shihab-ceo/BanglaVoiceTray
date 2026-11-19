@@ -18,4 +18,3 @@ if sys.platform == "win32" and getattr(sys, "frozen", False):
 
     if dll_dirs:
         os.environ["PATH"] = os.pathsep.join(dll_dirs + [os.environ.get("PATH", "")])
-
