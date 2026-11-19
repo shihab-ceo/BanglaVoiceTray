@@ -1,4 +1,4 @@
-# Bangla Voice Tray (Windows 11) · v1.1.1
+# Bangla Voice Tray (Windows 11) · v1.1.2
 
 একটি ছোট system-tray অ্যাপের প্রাথমিক সোর্স প্রজেক্ট। ডিফল্ট শর্টকাট `Ctrl+Shift+B` দিয়ে বাংলা ডিকটেশন চালু/বন্ধ করা যায়। লেখা clipboard/paste দিয়ে বর্তমান কার্সর অবস্থানে পাঠানোর চেষ্টা করে।
 
@@ -18,7 +18,7 @@
 7. Shortcut বদলাতে edit বোতাম চাপুন, নতুন key combination দিন, তারপর সংরক্ষণ করুন। Transparency slider সরালে window-র opacity সঙ্গে সঙ্গে বদলায়। Permission না থাকলে **মাইক্রোফোন permission খুলুন** চাপুন।
 
 ## EXE তৈরি
-`build_exe.bat` চালান। সফল হলে `dist\BanglaVoiceTray.exe` তৈরি হবে।
+`build_exe.bat` চালান। সফল হলে `dist\BanglaVoiceTray\BanglaVoiceTray.exe` তৈরি হবে।
 
 ## গুরুত্বপূর্ণ সীমাবদ্ধতা
 - অনলাইন Google Speech Recognition ব্যবহার করে; অডিও ইন্টারনেটের মাধ্যমে তৃতীয়-পক্ষের সেবায় প্রক্রিয়াকৃত হয়। গোপন/সংবেদনশীল কথা ডিকটেট করবেন না।
@@ -52,7 +52,7 @@
 
 Qt Widgets-এর জন্য `PySide6-Essentials` dependency যোগ হয়েছে। Audio, tray icon, global shortcut ও paste workflow আগের মতোই রাখা হয়েছে।
 
-## v1.1.1 build fix
+## v1.1.2 packaging fix
 
-PyInstaller-এর নিজস্ব PySide6 hooks ব্যবহার করা হয়েছে, যাতে অপ্রয়োজনীয় Qt DLL bundle হয়ে `QtCore` import error না হয়। নতুন portable ZIP-এ `BanglaVoiceTray.exe`-এর সঙ্গে এই বাংলা ব্যবহার নির্দেশিকাও থাকবে।
+আগের one-file build-এ কিছু Windows কম্পিউটারে `QtCore` DLL import error দেখা গেছে। এই সংস্করণে onedir প্যাকেজ এবং explicit Qt/shiboken DLL search path ব্যবহার করা হয়েছে। ZIP extract করে সম্পূর্ণ `BanglaVoiceTray` ফোল্ডারটি একই জায়গায় রাখুন; ওই ফোল্ডারের `BanglaVoiceTray.exe` চালান। `_internal` ফোল্ডারসহ কোনো ফাইল সরাবেন বা আলাদা করবেন না।
 
