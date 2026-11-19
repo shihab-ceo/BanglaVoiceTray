@@ -1,4 +1,4 @@
-# Bangla Voice Tray (Windows 11) · v1.1.0
+# Bangla Voice Tray (Windows 11) · v1.1.1
 
 একটি ছোট system-tray অ্যাপের প্রাথমিক সোর্স প্রজেক্ট। ডিফল্ট শর্টকাট `Ctrl+Shift+B` দিয়ে বাংলা ডিকটেশন চালু/বন্ধ করা যায়। লেখা clipboard/paste দিয়ে বর্তমান কার্সর অবস্থানে পাঠানোর চেষ্টা করে।
 
@@ -51,3 +51,8 @@
 - Microphone, shortcut, language, input, paste delay, startup ও permission controls একই window-তে।
 
 Qt Widgets-এর জন্য `PySide6-Essentials` dependency যোগ হয়েছে। Audio, tray icon, global shortcut ও paste workflow আগের মতোই রাখা হয়েছে।
+
+## v1.1.1 build fix
+
+PyInstaller-এর নিজস্ব PySide6 hooks ব্যবহার করা হয়েছে, যাতে অপ্রয়োজনীয় Qt DLL bundle হয়ে `QtCore` import error না হয়। নতুন portable ZIP-এ `BanglaVoiceTray.exe`-এর সঙ্গে এই বাংলা ব্যবহার নির্দেশিকাও থাকবে।
+
