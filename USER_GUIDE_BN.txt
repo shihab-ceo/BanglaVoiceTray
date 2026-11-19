@@ -1,0 +1,16 @@
+Bangla Voice Tray v1.1.2 — দ্রুত ব্যবহার নির্দেশিকা
+
+১) ZIP ফাইলের ওপর right-click করে Extract All… নির্বাচন করুন।
+২) Extract করা BanglaVoiceTray ফোল্ডারটি খুলুন।
+৩) এই ফোল্ডারের BanglaVoiceTray.exe-তে double-click করুন।
+   _internal ফোল্ডারসহ এই ফোল্ডারের কোনো ফাইল সরাবেন বা মুছবেন না।
+৪) অ্যাপটি Windows notification area/system tray-তে থাকবে। দরকার হলে taskbar-এর ^ চিহ্নে ক্লিক করে আইকনটি দেখুন।
+৫) tray আইকনে right-click করে “অবস্থা ও শর্টকাট দেখুন” অথবা “সেটিংস…” খুলুন।
+৬) লেখা বসানোর জায়গায় cursor রেখে Start Listening চাপুন অথবা Ctrl+Shift+B চাপুন। কথা বলা শেষে একই shortcut চাপলে শোনা বন্ধ হবে।
+৭) সেটিংস থেকে ভাষা, microphone input, paste delay, Windows startup, window transparency এবং shortcut পরিবর্তন করুন।
+৮) microphone permission দরকার হলে সেটিংসের “মাইক্রোফোন permission খুলুন” বোতাম চাপুন।
+
+সমস্যা হলে: ZIP আবার Extract All করুন, তারপর সম্পূর্ণ BanglaVoiceTray ফোল্ডার থেকে EXE চালান। শুধু EXE কপি করে চালাবেন না।
+
+গোপনীয়তা: বাংলা speech recognition অনলাইনে Google Speech Recognition ব্যবহার করে। অডিও তৃতীয়-পক্ষের সেবায় পাঠানো হয়; সংবেদনশীল কথা ডিকটেট করবেন না।
+
