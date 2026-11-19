@@ -1,4 +1,5 @@
 SpeechRecognition==3.14.3
+certifi==2026.10.19
 PyAudio==0.2.14
 keyboard==0.13.5
 pystray==0.19.5
