@@ -13,7 +13,7 @@ python -m pip install --upgrade pip
 if errorlevel 1 goto :error
 python -m pip install -r requirements.txt
 if errorlevel 1 goto :error
-python -m PyInstaller --noconfirm --clean --windowed --onefile --name BanglaVoiceTray --collect-all pystray --collect-all speech_recognition main.py
+python -m PyInstaller --noconfirm --clean --windowed --onedir --noupx --name BanglaVoiceTray --runtime-hook pyside_dll_path.py --collect-all pystray --collect-all speech_recognition main.py
 if errorlevel 1 goto :error
 echo.
 echo Build complete. EXE: dist\BanglaVoiceTray.exe
