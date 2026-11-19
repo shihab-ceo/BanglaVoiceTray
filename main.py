@@ -4,6 +4,7 @@ import json
 import threading
 import time
 import traceback
+import certifi
 from PySide6.QtCore import QObject, Signal, Slot, Qt
 from PySide6.QtWidgets import QApplication
 from modern_ui import ControlCenter
@@ -15,6 +16,15 @@ from PIL import Image, ImageDraw
 import pyperclip
 import pyautogui
 import speech_recognition as sr
+
+# A frozen Python runtime may not have its development-time CA file installed.
+# Use the portable CA bundle so HTTPS speech recognition works on clean PCs.
+_ca_file = os.environ.get("SSL_CERT_FILE")
+if not _ca_file or not os.path.isfile(_ca_file):
+    os.environ["SSL_CERT_FILE"] = certifi.where()
+_ca_dir = os.environ.get("SSL_CERT_DIR")
+if _ca_dir and not os.path.isdir(_ca_dir):
+    os.environ.pop("SSL_CERT_DIR", None)
 
 APP_NAME = "Bangla Voice Tray"
 APP_DIR = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "BanglaVoiceTray")
@@ -118,6 +128,20 @@ class BanglaVoiceTray:
         self.config = load_config()
         self.recognizer = sr.Recognizer()
         self.recognizer.dynamic_energy_threshold = True
+        self.microphone_devices = []
+        try:
+            pyaudio = sr.Microphone.get_pyaudio()
+            audio = pyaudio.PyAudio()
+            try:
+                for device_index in range(audio.get_device_count()):
+                    info = audio.get_device_info_by_index(device_index)
+                    if info.get("maxInputChannels", 0) > 0:
+                        self.microphone_devices.append((device_index, info.get("name") or f"Microphone {device_index + 1}"))
+            finally:
+                audio.terminate()
+            log(f"Microphone input devices found: {len(self.microphone_devices)}")
+        except Exception:
+            log("Microphone enumeration error: " + traceback.format_exc())
         self.active = False
         self.busy = False
         self.stop_event = threading.Event()
@@ -192,6 +216,7 @@ class BanglaVoiceTray:
 
     def _record_once(self):
         self.busy = True
+        stage = "microphone"
         try:
             device = self.config.get("microphone_device_index")
             with sr.Microphone(device_index=device) as source:
@@ -204,7 +229,9 @@ class BanglaVoiceTray:
                     if not self.active:
                         break
                     try:
+                        stage = "speech service"
                         text = self.recognizer.recognize_google(audio, language=self.config.get("language", "bn-BD"))
+                        stage = "microphone"
                         text = text.strip()
                         if text:
                             self._paste_text(text)
@@ -218,9 +245,14 @@ class BanglaVoiceTray:
                         self.active = False
                         break
         except Exception as e:
-            self.last_status = "মাইক্রোফোন চালু হয়নি · Settings ও log দেখুন"
-            log("Microphone/record error: " + traceback.format_exc())
-            self.notify(APP_NAME, "মাইক্রোফোন চালু হয়নি। Windows microphone permission চালু করুন বা Settings-এ input device বদলান।")
+            if stage == "speech service":
+                self.last_status = "মাইক্রোফোন চলছে · speech service-এ সংযোগ সমস্যা"
+                log("Speech service/HTTPS error: " + traceback.format_exc())
+                self.notify(APP_NAME, "মাইক্রোফোন থেকে অডিও নেওয়া হয়েছে, কিন্তু Google speech service-এ নিরাপদ সংযোগ হয়নি। ইন্টারনেট ও certificate সংযোগ দেখুন।")
+            else:
+                self.last_status = "মাইক্রোফোন চালু হয়নি · Settings ও log দেখুন"
+                log("Microphone/record error: " + traceback.format_exc())
+                self.notify(APP_NAME, "মাইক্রোফোন খুলতে পারিনি। Windows microphone permission, device সংযোগ ও Settings-এ input device দেখুন।")
             self.active = False
         finally:
             self.busy = False
@@ -283,20 +315,31 @@ class BanglaVoiceTray:
     def toggle_startup(self, icon=None, item=None):
         previous = bool(self.config.get("start_with_windows", True))
         enabled = not previous
-        if not set_startup(enabled):
+        ok, error = self.set_startup_preference(enabled)
+        if not ok:
             self.last_status = "Windows startup setting পরিবর্তন করা যায়নি"
+            log(error)
             self.open_settings()
             return
+
+        self.open_settings()
+
+    def set_startup_preference(self, enabled):
+        previous = bool(self.config.get("start_with_windows", True))
+        enabled = bool(enabled)
+        if not set_startup(enabled):
+            return False, "Windows startup registry setting লেখা যায়নি।"
         self.config["start_with_windows"] = enabled
         try:
             save_config(self.config)
-            self.last_status = "Windows startup " + ("চালু" if enabled else "বন্ধ")
         except Exception as e:
             set_startup(previous)
             self.config["start_with_windows"] = previous
-            self.last_status = "সেটিংস save হয়নি · " + str(e)
             log("Startup config save failed: " + traceback.format_exc())
-        self.open_settings()
+            return False, "Windows startup setting সংরক্ষণ করা যায়নি।\n\n" + str(e)
+        self.last_status = "Windows startup " + ("চালু" if enabled else "বন্ধ")
+        log(self.last_status)
+        return True, ""
 
     def show_status(self, icon=None, item=None):
         self.open_dashboard()
