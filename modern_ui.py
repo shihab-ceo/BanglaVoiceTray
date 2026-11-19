@@ -23,7 +23,7 @@ QPushButton#primaryButton { color: #F4FFFF; border: 1px solid #6DF5F1; backgroun
 QPushButton#primaryButton:hover { background: qlineargradient(x1:0,y1:0,x2:1,y2:1, stop:0 #31A5AE, stop:1 #476DC5); }
 QPushButton#editButton { min-width: 40px; max-width: 40px; min-height: 38px; padding: 0; color: #8BFBF4; font-size: 18px; border-radius: 11px; }
 QPushButton#startupButton { text-align: left; border: 1px solid #7DFFC0; border-radius: 10px; background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #CEFFE0, stop:1 #A6F4C5); color: #145638; padding: 12px 14px; font-size: 12px; font-weight: 700; }
-QPushButton#startupButton[enabled="false"] { border-color: #50656D; background: #223139; color: #B2C1C8; }
+QPushButton#startupButton[startupOn="false"] { border-color: #50656D; background: #223139; color: #B2C1C8; }
 QLineEdit, QComboBox, QDoubleSpinBox { color: #F2F7F9; background: qlineargradient(x1:0,y1:0,x2:0,y2:1, stop:0 #26363E, stop:1 #202E35); border: 1px solid #526A73; border-radius: 9px; padding: 9px 11px; selection-background-color: #2FAAB5; min-height: 22px; font-size: 12px; }
 QLineEdit:focus, QComboBox:focus, QDoubleSpinBox:focus { border: 1px solid #70F1EB; }
 QComboBox::drop-down { border: none; width: 30px; }
@@ -165,21 +165,29 @@ class ControlCenter(QMainWindow):
         grid.addWidget(field_label("ডিকটেশনের ভাষা"),0,0); grid.addWidget(self.language,0,1,Qt.AlignmentFlag.AlignRight)
         self.device=ArrowComboBox()
         self.devices={"System default":None}; self.device.addItem("System default",None)
-        for i,name in enumerate(getattr(self.owner,"microphone_names",[])):
-            label=f"{i+1}. {name}"; self.devices[label]=i; self.device.addItem(label,i)
+        for device_index,name in getattr(self.owner,"microphone_devices",[]):
+            label=f"{device_index+1}. {name}"; self.devices[label]=device_index; self.device.addItem(label,device_index)
         configured=self.owner.config.get("microphone_device_index"); self.device.setCurrentIndex(max(0,self.device.findData(configured))); self.device.setFixedWidth(200)
         grid.addWidget(field_label("Microphone input"),1,0); grid.addWidget(self.device,1,1,Qt.AlignmentFlag.AlignRight)
         self.delay=QDoubleSpinBox(); self.delay.setRange(0,2); self.delay.setSingleStep(.05); self.delay.setDecimals(2); self.delay.setValue(float(self.owner.config.get("paste_delay",.15))); self.delay.setSuffix(" s"); self.delay.setFixedWidth(120)
         grid.addWidget(field_label("Paste delay (সেকেন্ড)"),2,0); grid.addWidget(self.delay,2,1,Qt.AlignmentFlag.AlignRight)
         v.addLayout(grid)
-        self.startup=QPushButton(); self.startup.setObjectName("startupButton"); self.startup.setCheckable(True); self.startup.setChecked(bool(self.owner.config.get("start_with_windows",True))); self._startup_text(); self.startup.toggled.connect(self._startup_text); v.addWidget(self.startup)
+        self.startup=QPushButton(); self.startup.setObjectName("startupButton"); self.startup.setCheckable(True); self.startup.setChecked(bool(self.owner.config.get("start_with_windows",True))); self.startup.setToolTip("এই অপশন বদলালে Windows startup setting সঙ্গে সঙ্গে সংরক্ষিত হবে"); self._startup_text(); self.startup.toggled.connect(self._startup_changed); v.addWidget(self.startup)
         opacity_row=QHBoxLayout(); self.opacity_label=QLabel(); self.opacity_label.setStyleSheet("color:#CFD9DD;font-size:10px;font-weight:600;"); opacity_row.addWidget(self.opacity_label); opacity_row.addStretch(1); self.opaque=QLabel("Opaque"); self.opaque.setStyleSheet("color:#AAB8BE;font-size:10px;"); opacity_row.addWidget(self.opaque); v.addLayout(opacity_row)
         self.opacity=QSlider(Qt.Orientation.Horizontal); self.opacity.setRange(72,100); self.opacity.setSingleStep(2); self.opacity.setPageStep(4); self.opacity.setValue(round(float(self.owner.config.get("window_opacity",.98))*100)); self.opacity.valueChanged.connect(self._opacity_changed); v.addWidget(self.opacity); self._opacity_changed(self.opacity.value())
         lower=QHBoxLayout(); lower.addStretch(1); self.permission=QPushButton("মাইক্রোফোন permission খুলুন"); self.permission.clicked.connect(self._open_mic_settings); lower.addWidget(self.permission); v.addLayout(lower)
         return card
     def _startup_text(self):
         self.startup.setText("✓  Windows চালু হলে অ্যাপ চালু হবে  ·  চালু" if self.startup.isChecked() else "○  Windows চালু হলে অ্যাপ চালু হবে  ·  বন্ধ")
-        self.startup.setProperty("enabled",self.startup.isChecked()); self.startup.style().unpolish(self.startup); self.startup.style().polish(self.startup)
+        self.startup.setProperty("startupOn",str(self.startup.isChecked()).lower()); self.startup.style().unpolish(self.startup); self.startup.style().polish(self.startup)
+    def _startup_changed(self,enabled):
+        self._startup_text()
+        ok,error=self.owner.set_startup_preference(enabled)
+        if not ok:
+            self.startup.blockSignals(True); self.startup.setChecked(not enabled); self.startup.blockSignals(False); self._startup_text()
+            QMessageBox.warning(self,"Startup setting not saved",error,self)
+            return
+        self.footer_status.setText(self.owner.last_status)
     def _opacity_changed(self,value):
         self.opacity_label.setText(f"Window transparency  ·  {value}%")
         self.setWindowOpacity(value/100.0)
