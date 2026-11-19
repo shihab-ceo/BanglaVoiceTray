@@ -1,11 +1,26 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-py -3 -m venv .venv
-call .venv\Scripts\activate
+where py >nul 2>&1
+if not errorlevel 1 (
+    py -3 -m venv .venv
+) else (
+    python -m venv .venv
+)
+if errorlevel 1 goto :error
+call .venv\Scripts\activate.bat
 python -m pip install --upgrade pip
+if errorlevel 1 goto :error
 python -m pip install -r requirements.txt
-python -m PyInstaller --noconfirm --clean --windowed --onefile --name BanglaVoiceTray --collect-all pystray --collect-all speech_recognition main.py
+if errorlevel 1 goto :error
+python -m PyInstaller --noconfirm --clean --windowed --onefile --name BanglaVoiceTray --collect-all pystray --collect-all speech_recognition --collect-all PySide6 --collect-all shiboken6 main.py
+if errorlevel 1 goto :error
 echo.
 echo Build complete. EXE: dist\BanglaVoiceTray.exe
 pause
+exit /b 0
+:error
+echo.
+echo Build failed. Review the error above.
+pause
+exit /b 1
