@@ -1,4 +1,4 @@
-# Bangla Voice Tray (Windows 11) · v1.1.3
+# Bangla Voice Tray (Windows 11) · v1.1.4
 
 একটি ছোট system-tray অ্যাপের প্রাথমিক সোর্স প্রজেক্ট। ডিফল্ট শর্টকাট `Ctrl+Shift+B` দিয়ে বাংলা ডিকটেশন চালু/বন্ধ করা যায়। লেখা clipboard/paste দিয়ে বর্তমান কার্সর অবস্থানে পাঠানোর চেষ্টা করে।
 
@@ -18,7 +18,7 @@
 7. Shortcut বদলাতে edit বোতাম চাপুন, নতুন key combination দিন, তারপর সংরক্ষণ করুন। Transparency slider সরালে window-র opacity সঙ্গে সঙ্গে বদলায়। Permission না থাকলে **মাইক্রোফোন permission খুলুন** চাপুন।
 
 ## EXE তৈরি
-`build_exe.bat` চালান। সফল হলে `dist\BanglaVoiceTray\BanglaVoiceTray.exe` তৈরি হবে।
+`build_exe.bat` চালান। সফল হলে `dist-v1.1.4-final\BanglaVoiceTray\BanglaVoiceTray.exe` তৈরি হবে।
 
 ## গুরুত্বপূর্ণ সীমাবদ্ধতা
 - অনলাইন Google Speech Recognition ব্যবহার করে; অডিও ইন্টারনেটের মাধ্যমে তৃতীয়-পক্ষের সেবায় প্রক্রিয়াকৃত হয়। গোপন/সংবেদনশীল কথা ডিকটেট করবেন না।
@@ -56,3 +56,6 @@ Qt Widgets-এর জন্য `PySide6-Essentials` dependency যোগ হয়�
 
 আগের one-file build-এ কিছু Windows কম্পিউটারে `QtCore` DLL import error দেখা গেছে। এই সংস্করণে onedir প্যাকেজ, explicit Qt/shiboken DLL search path এবং process lifetime জুড়ে ধরে রাখা Windows DLL directory handles ব্যবহার করা হয়েছে। ZIP extract করে সম্পূর্ণ `BanglaVoiceTray` ফোল্ডারটি একই জায়গায় রাখুন; ওই ফোল্ডারের `BanglaVoiceTray.exe` চালান। `_internal` ফোল্ডারসহ কোনো ফাইল সরাবেন বা আলাদা করবেন না।
 
+## v1.1.4 microphone ও HTTPS fix
+
+Settings-এ এখন প্রকৃত input microphone device-গুলো তালিকাভুক্ত হয়; আগের UI-তে device enumeration যোগ না থাকায় শুধু `System default` দেখা যেত। Speech recognition-এর HTTPS certificate bundle ও Python SSL policy file portable build-এ অন্তর্ভুক্ত করা হয়েছে। মাইক্রোফোন খুলতে সমস্যা এবং Google speech service/নিরাপদ সংযোগের সমস্যার জন্য আলাদা status দেখানো হয়। Startup বোতামে click করলেই Windows auto-start setting সঙ্গে সঙ্গে সংরক্ষিত হয়; আলাদা করে settings save করার দরকার নেই।
