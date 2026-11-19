@@ -13,7 +13,7 @@ python -m pip install --upgrade pip
 if errorlevel 1 goto :error
 python -m pip install -r requirements.txt
 if errorlevel 1 goto :error
-python -m PyInstaller --noconfirm --clean --windowed --onefile --name BanglaVoiceTray --collect-all pystray --collect-all speech_recognition --collect-all PySide6 --collect-all shiboken6 main.py
+python -m PyInstaller --noconfirm --clean --windowed --onefile --name BanglaVoiceTray --collect-all pystray --collect-all speech_recognition main.py
 if errorlevel 1 goto :error
 echo.
 echo Build complete. EXE: dist\BanglaVoiceTray.exe
@@ -24,3 +24,4 @@ echo.
 echo Build failed. Review the error above.
 pause
 exit /b 1
+
